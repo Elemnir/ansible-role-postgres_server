@@ -1,0 +1,44 @@
+---
+
+- block:
+  - name: Install Postgresql Packages
+    yum:
+      name: [postgresql-server, postgresql-contrib, python-psycopg2]
+      state: installed
+  
+  - name: Check if Postgres database is initialized
+    stat:
+      path: /var/lib/pgsql/data/PG_VERSION
+    register: pgdata_dir_version
+
+  - name: Ensure Postgres database is initialized
+    command: postgresql-setup initdb
+    when: not pgdata_dir_version.stat.exists
+  
+  - name: Configure the pg_hba.conf
+    template:
+      src: pg_hba.conf.j2
+      dest: /var/lib/pgsql/data/pg_hba.conf
+    notify: Restart Postgresql
+
+  - name: Start and enable Postgres
+    service:
+      name: postgresql
+      state: started
+      enabled: yes
+  
+  - become_user: postgres
+    block:
+    - name: Create databases
+      postgresql_db:
+        name: "{{ item }}"
+      loop: "{{ postgres_server_databases }}"
+
+    - name: Create users
+      postgresql_user:
+        db: "{{ item.database }}"
+        name: "{{ item.username }}"
+        password: "{{ item.password|default(NULL) }}"
+      loop: "{{ postgres_server_users }}"
+
+  become: True

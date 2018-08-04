@@ -1,0 +1,16 @@
+---
+
+postgres_server_databases: []
+#  - testdb
+
+postgres_server_users: []
+#  - database: testdb
+#    username: testuser
+#    password: supersecretpassword
+
+postgres_server_hba_entries: []
+#  - type: host
+#    database: all
+#    user: all
+#    address: 10.0.0.40/24
+#    auth_method: md5
