@@ -1,6 +1,8 @@
 ---
 
-- block:
+- become: True
+  block:
+
   - name: Install Postgresql Packages
     yum:
       name: [postgresql-server, postgresql-contrib, python-psycopg2]
@@ -41,4 +43,3 @@
         password: "{{ item.password|default(NULL) }}"
       loop: "{{ postgres_server_users }}"
 
-  become: True
