@@ -28,7 +28,14 @@
       name: postgresql
       state: started
       enabled: yes
-  
+
+  - name: Open the port in the firewall
+    firewalld:
+      service: postgresql
+      state: enabled
+      permanent: True
+      immediate: True
+
   - become_user: postgres
     block:
     - name: Create databases
