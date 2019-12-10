@@ -2,10 +2,15 @@
 
 - become: True
   block:
+  
+  - name: Install the Postgres Repos
+    yum:
+      name: "{{ postgres_server_repo_url }}"
+      state: installed
 
   - name: Install Postgresql Packages
     yum:
-      name: [postgresql-server, postgresql-contrib, python-psycopg2]
+      name: "{{ postgres_server_packages }}"
       state: installed
   
   - name: Check if Postgres database is initialized
@@ -14,20 +19,30 @@
     register: pgdata_dir_version
 
   - name: Ensure Postgres database is initialized
-    command: postgresql-setup initdb
+    command: "/usr/pgsql/{{ postgres_server_version }}/bin/initdb -D {{ postgres_server_path }}"
     when: not pgdata_dir_version.stat.exists
   
-  - name: Configure the pg_hba.conf
+  - name: Make the service.d directory
+    file:
+      path: "/etc/systemd/system/postgresql-{{ postgres_server_version }}.service.d"
+      state: directory
+
+  - name: Configure the service
     template:
-      src: pg_hba.conf.j2
-      dest: /var/lib/pgsql/data/pg_hba.conf
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+    with_items:
+      - { src: pg_hba.conf.j2, dest: "{{ postgres_server_path }}/pg_hba.conf" }
+      - { src: postgresql.conf.j2, dest: "{{ postgres_server_path }}/postgresql.conf" }
+      - { src: postgresql.service.j2, dest: "/etc/systemd/system/postgresql-{{ postgres_server_version }}.service.d/pgdata.conf" }
     notify: Restart Postgresql
 
   - name: Start and enable Postgres
-    service:
-      name: postgresql
+    systemd:
+      name: "postgresql-{{ postgres_server_version }}.service"
       state: started
       enabled: yes
+      daemon_reload: True
 
   - name: Open the port in the firewall
     firewalld:

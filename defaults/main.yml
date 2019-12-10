@@ -1,5 +1,16 @@
 ---
 
+postgres_server_repo_url: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+postgres_server_version: 12
+
+postgres_server_packages:
+  - "postgresql{{ postgres_server_version }}-server"
+  - "postgresql{{ postgres_server_version }}-contrib"
+  - "python-psycopg2"
+
+postgres_server_path: "/var/lib/pgsql/{{ postgres_server_version }}/data"
+
 postgres_server_databases: []
 #  - testdb
 
