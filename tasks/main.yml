@@ -15,11 +15,18 @@
   
   - name: Check if Postgres database is initialized
     stat:
-      path: /var/lib/pgsql/data/PG_VERSION
+      path: "{{ postgres_server_path }}/PG_VERSION"
     register: pgdata_dir_version
 
+  - name: Create the Postgres directory structure
+    file:
+      path: "{{ postgres_server_path }}"
+      state: directory
+      owner: postgres
+      group: postgres
+
   - name: Ensure Postgres database is initialized
-    command: "/usr/pgsql/{{ postgres_server_version }}/bin/initdb -D {{ postgres_server_path }}"
+    command: "/usr/pgsql-{{ postgres_server_version }}/bin/initdb -D {{ postgres_server_path }}"
     when: not pgdata_dir_version.stat.exists
   
   - name: Make the service.d directory
