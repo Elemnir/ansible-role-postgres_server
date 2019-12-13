@@ -24,6 +24,13 @@
       state: directory
       owner: postgres
       group: postgres
+    when: not pgdata_dir_version.stat.exists
+
+  - name: Set the SELinux file context on the path
+    sefcontext:
+      target: "{{ postgres_server_path }}(/.*)?"
+      setype: postgresql_db_t
+    when: not pgdata_dir_version.stat.exisits and ansible_selinux.mode == 'enforcing'
 
   - name: Ensure Postgres database is initialized
     command: "/usr/pgsql-{{ postgres_server_version }}/bin/initdb -D {{ postgres_server_path }}"
